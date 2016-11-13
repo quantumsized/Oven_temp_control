@@ -108,7 +108,6 @@ int HEATER_ON = 1;  //used because may use sink current at some point
 int HEATER_OFF = 0;  //used because may use sink current at some point
 
 void setup() {
-  //Serial.begin(9600);
   lcd.init(); // Initialize LCD
   lcd.backlight(); // Initialize backlight
   lcd.off();
@@ -150,7 +149,6 @@ void PinB() {
   cli(); //stop interrupts happening before we read pin values
   reading = PIND & 0xC; //read all eight pin values then strip away all but pinA and pinB's values
   if (reading == B00001100 && bFlag) { //check that we have both pins at detent (HIGH) and that we are expecting detent on this pin's rising edge
-    //tempSet = tempSet + increment; //increment the encoder's position count
     if (tempSet > (maxTemp - increment)) {
       tempSet = maxTemp;
     } else {
@@ -169,7 +167,6 @@ void PinB() {
 void loop() {
   // read the state of the switch into a local variable:
   int buttonReading = digitalRead(buttonPin);
-  //unsigned long currentMillis = millis();
   if (state == 1) {
     if (oldEncPos != tempSet) {
       lcd.setCursor(4, 1); // Position cursor to refresh set value only
@@ -264,8 +261,6 @@ void loop() {
       }
     }
   }
-  // set the LED:
-  //digitalWrite(ledPin, ledState);
 
   // save the reading.  Next time through the loop,
   // it'll be the lastButtonState:
