@@ -5,7 +5,7 @@ I have scoured parts from here and there to put this together so the cost to me 
 
 I set this up to run from a 12 volt source being as I have that available and cause my fuel control solonoid is designed for 12 volt.
 
-Here is a list of parts as similar to what I am using:
+Here is a list of parts as similar to what I am using as can be:
 1 - 16 x 2 LCD display with serial adaptor
 1 - Arduino Nano or similar
 1 - mini bread board
