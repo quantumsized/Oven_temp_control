@@ -32,6 +32,6 @@ They have one of the largest selections and if you just search, it is the simple
 As for other parts such as mini breadboards, LCD displays, rotary encoders, and arduino tech, I use http://www.ebay.com/ for those.
 This would also be true for LEDs and LED strips.
 The other small components such as resistors, fuses, peizo buzzers, optoisolators, small signal transistors, and voltage regulators, I get those from other small electronics I have disassembled.
-I putrchased my STP60NF06 N-FET from Mouser Electronics: http://www.mouser.com/
+I purchased my STP60NF06 N-FET from Mouser Electronics: http://www.mouser.com/
 
 I will also post a picture of my make-up of this project at some point.
