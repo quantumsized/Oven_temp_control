@@ -2,7 +2,7 @@
 This name may be a bit misleading cuase it actually thermally controls a gas valve.
 
 /*****
-Please note that this is not for controlling a pilot light or any electronic igniter and as such it does not have any safty control in place to make sure there is something to ignite the gas when it is released by the electronic valve used in this project.
+Please note that this is not for controlling a pilot light or any electronic igniter and as such it does not have any safety control in place to make sure there is something to ignite the gas when it is released by the electronic valve used in this project.
 *****/
 
 I shall post a circuit diagram just as soon as I can.
