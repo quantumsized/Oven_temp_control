@@ -20,6 +20,10 @@ Here is a list of parts as similar to what I am using as can be:
 
 1 - Arduino Nano or similar
 
+1 - MAX6675 breakout board
+
+1 - Type K Thermocouple Sensor for Arduino (I used one that had a fairly long "nose" to poke into the oven)
+
 1 - mini bread board
 
 1 - Gas propane 12 volt electric valve (about $16 USD); http://www.ebay.com/itm/261887206478
