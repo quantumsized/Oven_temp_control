@@ -59,6 +59,7 @@ int lastButtonState = HIGH;   // the previous reading from the input pin
 // Pin for beeper
 int piezoPin = 12;
 
+
 // Rotery encoder vars
 volatile byte aFlag = 0; // let's us know when we're expecting a rising edge on pinA to signal that the encoder has arrived at a detent
 volatile byte bFlag = 0; // let's us know when we're expecting a rising edge on pinB to signal that the encoder has arrived at a detent (opposite direction to when aFlag is set)
@@ -90,16 +91,16 @@ unsigned long onTime; // Takes the millis() stamp for calculation
 const long timeOut = 5000; // Rated in miliseconds
 boolean firstOn = true; // Used for managing delay time for heater from first time on so it is not on right away
 
-// Read cycle timer vars for cycling heat on and off as well as refreshing temp on LCD
+// Read cycle timer vars
 unsigned long previousMillis = 0;
-const long cycleInterval = 500; // Used 500 miliseconds cause of the MAX chip read time
+const long cycleInterval = 500;
 float tempF = 0.00;
 
 // --- Debounce for button --- //
 // The following variables are unsigned long's because the time, measured in miliseconds,
 // will quickly become a bigger number than can be stored in an int.
 unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
-unsigned long debounceDelay = 500;    // the debounce time; increase if the output flickers
+unsigned long debounceDelay = 50;    // the debounce time; increase if the output flickers
 
 #define HEATER_OUTPUT_PIN 11 // define heater drive pin. Actually drives FET in my case
 int HEATER_ON = 1;  //used because may use sink current at some point
@@ -166,16 +167,16 @@ void loop() {
   // read the state of the switch into a local variable:
   int buttonReading = digitalRead(buttonPin);
   unsigned long currentTime = millis(); // grab current time
-  if((unsigned long)(currentTime - previousMillis) >= cycleInterval) { // test for updating temp at interval that is MAX chip dependant
-    tempF = thermocouple.readFahrenheit(); // update var
-    if (state == 1) { // test if to update the LCD
+  if ((unsigned long)(currentTime - previousMillis) >= cycleInterval) {
+    tempF = thermocouple.readFahrenheit();
+    if (state == 1) {
       lcd.setCursor(4, 0);
-      lcd.print("        "); // clear old reading
-      lcd.setCursor(4, 0); // reset cursor
-      lcd.print(tempF); // print new temp
-      lcd.print("\337F"); // This is the degree symbol
+      lcd.print("        ");
+      lcd.setCursor(4, 0);
+      lcd.print(tempF);
+      lcd.print("\337F");
     }
-    previousMillis = millis(); // record old time
+    previousMillis = millis();
   }
   if (state == 1) {
     if (oldEncPos != tempSet) {
@@ -243,19 +244,17 @@ void loop() {
     }
   }
   if (state == 1) {
-    if (tempF <= tempSet - hysteresis) {
-      if (digitalRead(HEATER_OUTPUT_PIN) == LOW) {
-        if (firstOn == true) {
-          if (millis() - onTime > timeOut) {
-            heaterOn();
-            onTime = 0;
-            firstOn = false; // Set to false so we know it is in first on warm-up mode
-          }
-        } else {
+    if (tempF <= (tempSet - hysteresis)) {
+      if (firstOn == true) {
+        if (millis() - onTime > timeOut) {
           heaterOn();
+          onTime = 0;
+          firstOn = false; // Set to false so we know it is in first on warm-up mode
         }
+      } else {
+        heaterOn();
       }
-    } else if (tempF >= tempSet + hysteresis) { // do heater On Off cycling
+    } else if (tempF >= (tempSet + hysteresis)) { // do heater On Off cycling
       if (firstTemp == 0) {
         if (beepUptoTemp == true) {
           tone(piezoPin, 3000, 100);
@@ -263,9 +262,7 @@ void loop() {
         firstTemp = 1;
         firstOn = false;
       }
-      if (digitalRead(HEATER_OUTPUT_PIN) == HIGH) {
-        heaterOff();
-      }
+      heaterOff();
     }
   }
 
@@ -277,9 +274,9 @@ void loop() {
 //------------------------------------------
 // Heater controls
 void heaterOn() {
-  digitalWrite(HEATER_OUTPUT_PIN, HEATER_ON);
+  digitalWrite(HEATER_OUTPUT_PIN, HIGH);
 }
 
 void heaterOff() {
-  digitalWrite(HEATER_OUTPUT_PIN, HEATER_OFF);
+  digitalWrite(HEATER_OUTPUT_PIN, LOW);
 }
