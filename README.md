@@ -10,8 +10,8 @@ I have only just finished this ans as such it is open to the pit-falls. It is un
 I will post an update if needed after complete test.
 
 Tho not needed, I used a mini breadboard as a method of mounting the Arduino Nano.
-In addition, I used a piece of Polycarbonate 1/4 inch thick and about 3 inches by 6 inches.
-My LCD display is mounted with 3/4 inch tall stand-offs.
+In addition, I used a piece of Polycarbonate 1/4 inch thick and about 2.5 inches by 5 inches.
+My LCD display is mounted with 5/8 inch tall stand-offs.  The mini breadboard is mounted with double-sided tape.
 I am yet to build a full encasement but that is the next step after making sure all is working to my satisfaction.
 
 Here is a list of parts as similar to what I am using as can be:
