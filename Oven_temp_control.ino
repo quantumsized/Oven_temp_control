@@ -79,9 +79,9 @@ boolean beepOnOff = true; // Beep when turning on and off
 boolean beepUptoTemp = true; // Beep when up to temp first time
 
 // Stuff for thermocouple
-int thermoDO = 5; // Pin number
+int thermoDO = 5; // Pin number (DO/SO)
 int thermoCS = 6; // Pin number
-int thermoCLK = 7; // Pin number
+int thermoCLK = 7; // Pin number (CLK/SCK)
 MAX6675 thermocouple(thermoCLK, thermoCS, thermoDO); // Associate vars connecting program with hardware
 int vccPin = 8; // Pin number
 int gndPin = 9; // Pin number
