@@ -1,11 +1,8 @@
 /* Written by Tim Mann and for the purpose of replacing the non functional thermostat for my propane oven.
 I have scoured parts from here and there to put this together so the cost to me is minimal.
-
 *** PLEASE NOTE THAT THE TEMPURATURE USED IN THIS SCRIPT WAS SET IN DEGREES FARENHEIT ***
-
 I set this up to run from a 12 volt source being as I have that available and cause my fuel control solonoid is designed for 12 volt.
-
-Here is a list of parts as similar to what I am using:
+Here is a list of parts as similar to what I am using as can be:
 1 - 16 x 2 LCD display with serial adaptor
 1 - Arduino Nano or similar
 1 - mini bread board
@@ -23,18 +20,14 @@ Here is a list of parts as similar to what I am using:
   1 @ 1 k ohm
   1 @ 3k3 ohm
   1 @ 4k7 ohm
-
 A schmatic is posted with this and if you cannot find it then message me here.
-
 This has taken me a number of hours and some trial of various code snippets posted to various forums to make this up.
 There are a number of things I didn't know when beginning this but with the right search criteria I was able to find the random peices that total this amalgumation.
 I have quite a few notes and even with that this currently takes up 372 bytes (18%) of dynamic memory.
 Sketch total is 8,998 bytes (29%) of program storage.
 All this has been tested and written in AVRDude v1.6.4
-
 I wanted it to be silent on and off besides the solonoid operating the gas so I used an optoisolator driving a FET rather than a relay for the switching.
 This also reduces the load on the *uino (Nano in my case for size reasons).
-
 A list of setable variables for your enjoyment:
 *** these are default values set
 int minTemp = 100;
@@ -66,6 +59,7 @@ int lastButtonState = HIGH;   // the previous reading from the input pin
 // Pin for beeper
 int piezoPin = 12;
 
+
 // Rotery encoder vars
 volatile byte aFlag = 0; // let's us know when we're expecting a rising edge on pinA to signal that the encoder has arrived at a detent
 volatile byte bFlag = 0; // let's us know when we're expecting a rising edge on pinB to signal that the encoder has arrived at a detent (opposite direction to when aFlag is set)
@@ -85,9 +79,9 @@ boolean beepOnOff = true; // Beep when turning on and off
 boolean beepUptoTemp = true; // Beep when up to temp first time
 
 // Stuff for thermocouple
-int thermoDO = 5; // Pin number
+int thermoDO = 5; // Pin number (DO/SO)
 int thermoCS = 6; // Pin number
-int thermoCLK = 7; // Pin number
+int thermoCLK = 7; // Pin number (CLK/SCK)
 MAX6675 thermocouple(thermoCLK, thermoCS, thermoDO); // Associate vars connecting program with hardware
 int vccPin = 8; // Pin number
 int gndPin = 9; // Pin number
@@ -97,11 +91,16 @@ unsigned long onTime; // Takes the millis() stamp for calculation
 const long timeOut = 5000; // Rated in miliseconds
 boolean firstOn = true; // Used for managing delay time for heater from first time on so it is not on right away
 
+// Read cycle timer vars
+unsigned long previousMillis = 0;
+const long cycleInterval = 500;
+float tempF = 0.00;
+
 // --- Debounce for button --- //
 // The following variables are unsigned long's because the time, measured in miliseconds,
 // will quickly become a bigger number than can be stored in an int.
 unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
-unsigned long debounceDelay = 200;    // the debounce time; increase if the output flickers
+unsigned long debounceDelay = 50;    // the debounce time; increase if the output flickers
 
 #define HEATER_OUTPUT_PIN 11 // define heater drive pin. Actually drives FET in my case
 int HEATER_ON = 1;  //used because may use sink current at some point
@@ -167,12 +166,32 @@ void PinB() {
 void loop() {
   // read the state of the switch into a local variable:
   int buttonReading = digitalRead(buttonPin);
+  unsigned long currentTime = millis(); // grab current time
+  if ((unsigned long)(currentTime - previousMillis) >= cycleInterval) {
+    tempF = thermocouple.readFahrenheit();
+    if (state == 1) {
+      lcd.setCursor(4, 0);
+      lcd.print("        ");
+      lcd.setCursor(4, 0);
+      lcd.print(tempF);
+      lcd.print("\337F");
+    }
+    previousMillis = millis();
+  }
   if (state == 1) {
     if (oldEncPos != tempSet) {
       lcd.setCursor(4, 1); // Position cursor to refresh set value only
       lcd.print(tempSet);
       oldEncPos = tempSet;
     }
+
+    lcd.setCursor(0, 0);
+    lcd.print("On:");
+    lcd.setCursor(0, 1);
+    lcd.print("Set:");
+    lcd.print(tempSet);
+    lcd.print("\337F");
+    analogWrite(LCD_Backlight, 64); // Set backlight brightness value: 0-128
   } else {
     tempSet = 100; // Preset to minium value
     digitalWrite(HEATER_OUTPUT_PIN, HEATER_OFF); // Make sure heater is off to start
@@ -202,16 +221,6 @@ void loop() {
             tone(piezoPin, 3000, 200); // tone(Pin,Freq,Duration) Duration in miliseconds and Freq in Hz
           }
           lcd.on(); // turn on display
-          lcd.setCursor(0, 0);
-          lcd.print("On:");
-          lcd.setCursor(4, 0);
-          lcd.print(thermocouple.readFahrenheit());
-          lcd.print("\337F");
-          lcd.setCursor(0, 1);
-          lcd.print("Set:");
-          lcd.print(tempSet);
-          lcd.print("\337F");
-          analogWrite(LCD_Backlight, 64); // Set backlight brightness value: 0-128
           onTime = millis(); // set time to start count from for delay heater
         } else if (state == 1) {
           state = 0;
@@ -227,7 +236,6 @@ void loop() {
           lcd.setCursor(0, 1);
           lcd.print("                ");
           lcd.setCursor(0, 0);
-          
           analogWrite(LCD_Backlight, LOW); // turn off back light
           lcd.off(); // turn off display
           digitalWrite(HEATER_OUTPUT_PIN, 0); // make sure heater is turned off regardless of state
@@ -236,29 +244,25 @@ void loop() {
     }
   }
   if (state == 1) {
-    if (thermocouple.readFahrenheit() <= tempSet - hysteresis) {
-      if (digitalRead(HEATER_OUTPUT_PIN) == LOW) {
-        if(firstOn == true) {
-          if (millis() - onTime > timeOut) {
-            heaterOn();
-            onTime = 0;
-            firstOn = false; // Set to false so we know it is in first on warm-up mode
-          }
-        }else{
+    if (tempF <= (tempSet - hysteresis)) {
+      if (firstOn == true) {
+        if (millis() - onTime > timeOut) {
           heaterOn();
+          onTime = 0;
+          firstOn = false; // Set to false so we know it is in first on warm-up mode
         }
+      } else {
+        heaterOn();
       }
-    } else if (thermocouple.readFahrenheit() >= tempSet + hysteresis) { // do heater On Off cycling
-      if (beepUptoTemp == true) {
-        tone(piezoPin, 2000, 200);
-      }
+    } else if (tempF >= (tempSet + hysteresis)) { // do heater On Off cycling
       if (firstTemp == 0) {
+        if (beepUptoTemp == true) {
+          tone(piezoPin, 3000, 100);
+        }
         firstTemp = 1;
         firstOn = false;
       }
-      if (digitalRead(HEATER_OUTPUT_PIN) == HIGH) {
-        heaterOff();
-      }
+      heaterOff();
     }
   }
 
@@ -270,9 +274,9 @@ void loop() {
 //------------------------------------------
 // Heater controls
 void heaterOn() {
-  digitalWrite(HEATER_OUTPUT_PIN, HEATER_ON);
+  digitalWrite(HEATER_OUTPUT_PIN, HIGH);
 }
 
 void heaterOff() {
-  digitalWrite(HEATER_OUTPUT_PIN, HEATER_OFF);
+  digitalWrite(HEATER_OUTPUT_PIN, LOW);
 }
